@@ -9,7 +9,7 @@ app.use(express.json()); // for parsing application/json
 app.use(cors());
 app.use(cookieParser());
 
-app.get("/v2/", (req, res) => {
+app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
