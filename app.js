@@ -8,8 +8,9 @@ const port = +process.env.BACKEND_PORT;
 app.use(express.json()); // for parsing application/json
 app.use(cors());
 app.use(cookieParser());
+app.use(express.static("public"));
 
-app.get("/", (req, res) => {
+app.get("/api", (req, res) => {
   res.send("Hello World!");
 });
 
