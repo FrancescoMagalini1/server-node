@@ -131,7 +131,7 @@ async function afterExportWebhook(req, res) {
   let id = data.skybox_obfuscated_id;
   if (cache.has(id)) {
     let obj = cache.get(id);
-    obj.status = "exporting" + data.status;
+    obj.status = "exporting " + data.status;
     obj.hdr_url = data.file_url;
   }
   res.status(200).end();
