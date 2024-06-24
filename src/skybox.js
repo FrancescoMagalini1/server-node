@@ -53,9 +53,11 @@ async function createSkybox(req, res) {
       obfuscated_id: response.obfuscated_id,
       title: response.title,
       prompt: response.prompt,
-      status: response.status,
+      status: "generation " + response.status,
+      thumbnail_url: "",
+      hdr_url: "",
     };
-    cache.set(String(response.id), obj);
+    cache.set(String(response.obfuscated_id), obj);
     res.status(200).json(obj);
   } catch (error) {
     console.log(error);
@@ -82,13 +84,62 @@ function getSkyboxStatus(req, res) {
 }
 
 /**
- * Get Skybox Status function.
+ * After creation webhook function.
  * @param {import("express").Request} req
  * @param {import("express").Response} res
  */
-function afterCreateWebhook(req, res) {
-  console.log(req.body);
+async function afterCreateWebhook(req, res) {
+  let data = req.body;
+  let id = data.obfuscated_id;
+  if (cache.has(id)) {
+    let obj = cache.get(id);
+    obj.status = data.status;
+    obj.thumbnail_url = data.file_url;
+  }
+  if (data.status == "complete") {
+    try {
+      let request = await fetch(
+        "https://backend.blockadelabs.com/api/v1/skybox/export",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": process.env.SKYBOX_API_KEY,
+          },
+          body: JSON.stringify({
+            skybox_id: id,
+            type_id: 4,
+            webhook_url: "http:/109.205.183.140:8083/v1/webhook/export",
+          }),
+        }
+      );
+    } catch (error) {
+      console.log(error);
+      res.status(500).end();
+    }
+  }
   res.status(200).end();
 }
 
-export { createSkybox, getSkyboxStatus, afterCreateWebhook };
+/**
+ * After export webhook function.
+ * @param {import("express").Request} req
+ * @param {import("express").Response} res
+ */
+async function afterExportWebhook(req, res) {
+  let data = req.body;
+  let id = data.skybox_obfuscated_id;
+  if (cache.has(id)) {
+    let obj = cache.get(id);
+    obj.status = "exporting" + data.status;
+    obj.hdr_url = data.file_url;
+  }
+  res.status(200).end();
+}
+
+export {
+  createSkybox,
+  getSkyboxStatus,
+  afterCreateWebhook,
+  afterExportWebhook,
+};

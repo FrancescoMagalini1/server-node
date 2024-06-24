@@ -6,6 +6,7 @@ import {
   createSkybox,
   getSkyboxStatus,
   afterCreateWebhook,
+  afterExportWebhook,
 } from "./src/skybox.js";
 import { authorizer, Biscuit, PublicKey } from "@biscuit-auth/biscuit-wasm";
 
@@ -65,6 +66,7 @@ app.post("/v1/auth", login);
 app.post("/v1/skybox", auth(), createSkybox);
 app.get("/v1/skybox/:id", auth(), getSkyboxStatus);
 app.post("/v1/webhook/create", afterCreateWebhook);
+app.post("/v1/webhook/export", afterExportWebhook);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
